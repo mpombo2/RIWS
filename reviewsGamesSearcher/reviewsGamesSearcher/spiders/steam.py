@@ -1,3 +1,4 @@
+import json
 from scrapy import Spider, Request
 
 
@@ -6,7 +7,8 @@ class SteamSpider(Spider):
 
     def start_requests(self):
         urls = [
-            "https://store.steampowered.com/app/787810/Rogue_Heroes_Ruins_of_Tasos/"]
+            # "https://store.steampowered.com/app/787810/Rogue_Heroes_Ruins_of_Tasos/", 
+             "https://steamcommunity.com/app/787810/reviews/?browsefilter=toprated&snr=1_5_100010_"]
         for url in urls:
             yield Request(url=url, callback=self.parse)
 
@@ -16,3 +18,5 @@ class SteamSpider(Spider):
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log(f'Guardado fichero {filename}')
+
+        json.loads(response.text)
