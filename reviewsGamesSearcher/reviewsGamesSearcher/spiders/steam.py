@@ -35,7 +35,7 @@ class SteamSpider(Spider):
 
         for url in urls:
             # yield Request(url=url, callback=self.parse)
-            yield SplashRequest(url=url, callback=self.parse, endpoint='render.html', args={'lua_source': script} )
+            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': script})
 
     def parse(self, response):
         page = response.url.split("/")[2]
