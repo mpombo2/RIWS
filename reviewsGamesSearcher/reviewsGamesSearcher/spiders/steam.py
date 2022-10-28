@@ -1,6 +1,7 @@
-import json
 from scrapy import Spider
 from scrapy_splash import SplashRequest
+
+from reviewsGamesSearcher.items import Review
 
 
 class SteamSpider(Spider):
@@ -34,26 +35,20 @@ end
 
     def parse(self, response):
         href = response.css(".view_all_reviews_btn > a::attr(href)").get()
-        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'wait': 2, 'num_scrolls': 20})
+        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'wait': 2, 'num_scrolls': 10})
 
     def parse_reviews(self, response):
-        authors = response.css(
-            ".apphub_CardContentAuthorName > a::text").getall()
-        for author in authors:
-            print(author)
 
-        hours = response.css(".hours::text").getall()
-        for hour in hours:
-            print(hour)
+        boxReviews = response.css(
+            ".apphub_Card.modalContentLink.interactable")
 
-        dates = response.css(".date_posted::text").getall()
-        for date in dates:
-            print(date)
-
-        ranking = response.css(".title::text").getall()
-        for rank in ranking:
-            print(rank)
-
-        reviews = response.css(".apphub_CardTextContent::text").getall()
-        for review in reviews:
-            print(review)
+        for box in boxReviews:
+            review = Review()
+            review['author'] = box.css(
+                ".apphub_CardContentAuthorName > a::text").get()
+            review['hour'] = box.css(".hours::text").get()
+            review['date'] = box.css(".date_posted::text").get()
+            review['rank'] = box.css(".title::text").get()
+            review['review'] = ' '.join(
+                box.css(".apphub_CardTextContent::text").getall())
+            yield review  # Will go to your pipeline

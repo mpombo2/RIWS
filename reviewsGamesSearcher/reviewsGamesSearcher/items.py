@@ -6,7 +6,9 @@
 import scrapy
 
 
-class ReviewsgamessearcherItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class Review(scrapy.Item):
+    author = scrapy.Field()
+    hour = scrapy.Field()
+    date = scrapy.Field()
+    rank = scrapy.Field()
+    review = scrapy.Field()
