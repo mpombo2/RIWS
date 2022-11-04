@@ -91,3 +91,17 @@ SPLASH_URL = 'http://localhost:8050/'
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+DEFAULT_ITEM_CLASS = 'reviewsGamesSearcher.items.Review'
+
+ITEM_PIPELINES = {
+   'reviewsGamesSearcher.pipelines.ReviewsgamessearcherPipeline': 1,    #Default: 300
+}
+
+ITEM_PIPELINES = {
+    'scrapyelasticsearch.scrapyelasticsearch.ElasticSearchPipeline': 100
+}
+
+ELASTICSEARCH_SERVERS = ['http://localhost:9200/']    #Se localhost non funcinoa poñer IP privada
+ELASTICSEARCH_INDEX = 'index_steam'
+ELASTICSEARCH_TYPE = 'items'
