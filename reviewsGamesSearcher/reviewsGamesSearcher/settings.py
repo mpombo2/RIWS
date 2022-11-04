@@ -7,7 +7,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'University of Coruna - Spain'
+BOT_NAME = 'University of Coruna Spain'
 
 SPIDER_MODULES = ['reviewsGamesSearcher.spiders']
 NEWSPIDER_MODULE = 'reviewsGamesSearcher.spiders'
