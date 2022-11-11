@@ -3,12 +3,12 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
-import scrapy
+from scrapy.item import Item, Field
 
 
-class Review(scrapy.Item):
-    author = scrapy.Field()
-    hour = scrapy.Field()
-    date = scrapy.Field()
-    rank = scrapy.Field()
-    review = scrapy.Field()
+class Review(Item):
+    author = Field()
+    hour = Field()
+    date = Field()
+    rank = Field()
+    review = Field()

@@ -102,6 +102,8 @@ ITEM_PIPELINES = {
     'scrapyelasticsearch.scrapyelasticsearch.ElasticSearchPipeline': 100
 }
 
-ELASTICSEARCH_SERVERS = ['http://localhost:9200/']    #Se localhost non funcinoa poñer IP privada
+ELASTICSEARCH_SERVERS = ['https://localhost:9200/']    #Se localhost non funcinoa poñer IP privada
+ELASTICSEARCH_USERNAME = 'elastic'
+ELASTICSEARCH_PASSWORD = 'es1234'
 ELASTICSEARCH_INDEX = 'index_steam'
 ELASTICSEARCH_TYPE = 'items'
