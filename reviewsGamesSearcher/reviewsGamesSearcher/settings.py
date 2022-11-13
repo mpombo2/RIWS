@@ -31,7 +31,7 @@ ROBOTSTXT_OBEY = True
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -95,15 +95,10 @@ SPLASH_URL = 'http://localhost:8050/'
 DEFAULT_ITEM_CLASS = 'reviewsGamesSearcher.items.Review'
 
 ITEM_PIPELINES = {
-   'reviewsGamesSearcher.pipelines.ReviewsgamessearcherPipeline': 1,    #Default: 300
-}
-
-ITEM_PIPELINES = {
-    'scrapyelasticsearch.scrapyelasticsearch.ElasticSearchPipeline': 100
+    'scrapyelasticsearch.scrapyelasticsearch.ElasticSearchPipeline': 500
 }
 
 ELASTICSEARCH_SERVERS = ['https://localhost:9200/']    #Se localhost non funcinoa poñer IP privada
-ELASTICSEARCH_USERNAME = 'elastic'
-ELASTICSEARCH_PASSWORD = 'es1234'
 ELASTICSEARCH_INDEX = 'index_steam'
-ELASTICSEARCH_TYPE = 'items'
+ELASTICSEARCH_TYPE = '_doc'
+ELASTICSEARCH_BUFFER_LENGTH = 3000
