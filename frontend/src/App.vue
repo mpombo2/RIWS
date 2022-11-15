@@ -11,12 +11,10 @@
           width="40"
         />
 
-        <span class="text-h4"> Titulo </span>
+        <span class="text-h4"> Reseñas steam </span>
       </div>
 
       <v-spacer></v-spacer>
-
-      <v-switch hide-details></v-switch>
     </v-app-bar>
     <v-main class="mainContainer d-flex align-center">
       <MainPage />
@@ -31,10 +29,6 @@ export default {
   components: {
     MainPage,
   },
-
-  data: () => ({
-    //
-  }),
 };
 </script>
 

@@ -46,7 +46,7 @@ end
             review = Review()
             review['author'] = box.css(
                 ".apphub_CardContentAuthorName > a::text").get().strip()
-            review['hour'] = box.css(".hours::text").get().strip()
+            review['hour'] = box.css(".hours::text").get().strip() 
             review['date'] = box.css(".date_posted::text").get().strip()
             review['rank'] = box.css(".title::text").get().strip()
 
