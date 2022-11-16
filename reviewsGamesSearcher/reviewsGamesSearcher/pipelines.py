@@ -5,6 +5,7 @@
 
 from datetime import datetime
 from elasticsearch import Elasticsearch
+from elasticsearch import helpers
 
 
 class ReviewsgamessearcherPipeline:
@@ -24,6 +25,16 @@ class ReviewsgamessearcherPipeline:
         }
         es = Elasticsearch('https://localhost:9200',
                        verify_certs=False,  basic_auth=('elastic', 'es1234'),)
-        resp = es.index(index="steam", document=doc)
-        print(resp['result'])
+
+        actions = []
+        for item in self.listItems:
+            action = {
+                "_index": "steam",
+                "_source": dict(item)
+                }
+            actions.append(action)
+
+        helpers.bulk(es, actions)
+
         print("spider closed")
+        #print(self.listItems)

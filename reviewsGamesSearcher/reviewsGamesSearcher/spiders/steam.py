@@ -28,7 +28,7 @@ end
         urls = [
             # "https://store.steampowered.com/app/787810/Rogue_Heroes_Ruins_of_Tasos/",
             # "https://steamcommunity.com/app/787810/reviews/?browsefilter=toprated&snr=1_5_100010_",
-            "https://store.steampowered.com/app/529340/Victoria_3/"]
+            "https://store.steampowered.com/app/943370/Bravery_and_Greed/"]
 
         for url in urls:
             yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'wait': 2, 'num_scrolls': 5})
@@ -54,6 +54,8 @@ end
                 box.css(".apphub_CardTextContent::text").getall())
             reviewText = reviewText.replace("\n", "")
             reviewText = reviewText.replace("\t", "")
+            #reviewText = reviewText.replace("'", "")
+            #reviewText = reviewText.replace("\"", "")
             review['review'] = reviewText.strip()
 
             yield review  # Will go to your pipeline
