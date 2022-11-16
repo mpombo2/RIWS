@@ -12,11 +12,11 @@ class SteamSpider(Spider):
     script = """
 function main(splash, args)
     splash.images_enabled = false
-    local scroll_delay = 1.0
+    local scroll_delay = 2.0
     local scroll_to = splash:jsfunc("window.scrollTo")
     local get_body_height = splash:jsfunc("function() {return document.body.scrollHeight;}")
     assert(splash:go(splash.args.url))
-    splash:wait(splash.args.wait)
+    splash:wait(2.0)
     for _ = 1, splash.args.num_scrolls do
         scroll_to(0, get_body_height())
         splash:wait(scroll_delay)
@@ -28,16 +28,14 @@ end
 
     def start_requests(self):
         urls = [
-            # "https://store.steampowered.com/app/787810/Rogue_Heroes_Ruins_of_Tasos/",
-            # "https://steamcommunity.com/app/787810/reviews/?browsefilter=toprated&snr=1_5_100010_",
-            "https://store.steampowered.com/app/943370/Bravery_and_Greed/"]
+            "https://store.steampowered.com/app/813780/Age_of_Empires_II_Definitive_Edition/"]
 
         for url in urls:
-            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'wait': 2, 'num_scrolls': 5})
+            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'wait': 10, 'num_scrolls': 5})
 
     def parse(self, response):
         href = response.css(".view_all_reviews_btn > a::attr(href)").get()
-        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'wait': 2, 'num_scrolls': 10})
+        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'wait': 30, 'num_scrolls': 10})
 
     def parse_reviews(self, response):
 
@@ -53,16 +51,16 @@ end
             review['author'] = author
 
             hour = box.css(".hours::text").get().strip()
-            hour = re.sub(r"[^a-zA-Z0-9\s]", "", hour)
-            review['hour'] = hour
+            hour = re.sub(r"[^0-9.,]", "", hour)
+            review['hour'] = float(hour)
 
             date = box.css(".date_posted::text").get().strip()
             date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
             review['date'] = date
 
             rank = box.css(".title::text").get().strip()
-            rank = re.sub(r"[^a-zA-Z0-9\s]", "", rank)
-            review['rank'] = rank
+            rank = re.sub(r"[^a-zA-Z]", "", rank)
+            review['rank'] = (rank == "Recommended")
 
             reviewText = ' '.join(
                 box.css(".apphub_CardTextContent::text").getall())
