@@ -3,6 +3,8 @@ from scrapy_splash import SplashRequest
 
 from reviewsGamesSearcher.items import Review
 
+import re
+
 
 class SteamSpider(Spider):
     name = "steam"
@@ -44,18 +46,29 @@ end
 
         for box in boxReviews:
             review = Review()
-            review['author'] = box.css(
+
+            author = box.css(
                 ".apphub_CardContentAuthorName > a::text").get().strip()
-            review['hour'] = box.css(".hours::text").get().strip() 
-            review['date'] = box.css(".date_posted::text").get().strip()
-            review['rank'] = box.css(".title::text").get().strip()
+            author = re.sub(r"[^a-zA-Z0-9\s]", "", author)
+            review['author'] = author
+
+            hour = box.css(".hours::text").get().strip()
+            hour = re.sub(r"[^a-zA-Z0-9\s]", "", hour)
+            review['hour'] = hour
+
+            date = box.css(".date_posted::text").get().strip()
+            date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
+            review['date'] = date
+
+            rank = box.css(".title::text").get().strip()
+            rank = re.sub(r"[^a-zA-Z0-9\s]", "", rank)
+            review['rank'] = rank
 
             reviewText = ' '.join(
                 box.css(".apphub_CardTextContent::text").getall())
             reviewText = reviewText.replace("\n", "")
             reviewText = reviewText.replace("\t", "")
-            #reviewText = reviewText.replace("'", "")
-            #reviewText = reviewText.replace("\"", "")
+            reviewText = re.sub(r"[^a-zA-Z0-9\s]", "", reviewText)
             review['review'] = reviewText.strip()
 
             yield review  # Will go to your pipeline
