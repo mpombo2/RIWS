@@ -6,6 +6,7 @@
 from elasticsearch import Elasticsearch, helpers
 import json
 
+
 class ReviewsgamessearcherPipeline:
     listItems = []
 
@@ -15,8 +16,7 @@ class ReviewsgamessearcherPipeline:
 
     def close_spider(self, spider):
 
-        es = Elasticsearch('https://localhost:9200',
-                           verify_certs=False,  basic_auth=('elastic', 'es1234'),)
+        es = Elasticsearch('http://localhost:9200')
 
         actions = [
             {

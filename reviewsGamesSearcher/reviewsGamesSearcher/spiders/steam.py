@@ -14,11 +14,11 @@ class SteamSpider(Spider):
     script = """
 function main(splash, args)
     splash.images_enabled = false
-    local scroll_delay = 2.0
+    local scroll_delay = 1.0
     local scroll_to = splash:jsfunc("window.scrollTo")
     local get_body_height = splash:jsfunc("function() {return document.body.scrollHeight;}")
     assert(splash:go(splash.args.url))
-    splash:wait(2.0)
+    splash:wait(5.0)
     for _ = 1, splash.args.num_scrolls do
         scroll_to(0, get_body_height())
         splash:wait(scroll_delay)
@@ -33,11 +33,11 @@ end
             "https://store.steampowered.com/app/813780/Age_of_Empires_II_Definitive_Edition/"]
 
         for url in urls:
-            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'wait': 10, 'num_scrolls': 5})
+            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'wait': 15, 'num_scrolls': 5})
 
     def parse(self, response):
         href = response.css(".view_all_reviews_btn > a::attr(href)").get()
-        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'wait': 30, 'num_scrolls': 10})
+        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'wait': 200, 'num_scrolls': 40})
 
     def parse_reviews(self, response):
 
