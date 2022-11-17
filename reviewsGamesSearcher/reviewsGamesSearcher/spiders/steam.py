@@ -61,9 +61,6 @@ end
             date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
             review['date'] = self.format_date(date)
 
-            print("FECHAAAA FORMATEADA")
-            print(review['date'])
-
             rank = box.css(".title::text").get().strip()
             rank = re.sub(r"[^a-zA-Z]", "", rank)
             review['rank'] = (rank == "Recommended")
