@@ -33,11 +33,11 @@ end
             "https://store.steampowered.com/app/813780/Age_of_Empires_II_Definitive_Edition/"]
 
         for url in urls:
-            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'wait': 15, 'num_scrolls': 5})
+            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'timeout': 15, 'num_scrolls': 5})
 
     def parse(self, response):
         href = response.css(".view_all_reviews_btn > a::attr(href)").get()
-        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'wait': 200, 'num_scrolls': 40})
+        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'timeout': 120, 'num_scrolls': 100})
 
     def parse_reviews(self, response):
 
