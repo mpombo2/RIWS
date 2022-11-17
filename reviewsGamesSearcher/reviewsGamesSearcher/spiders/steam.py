@@ -1,6 +1,8 @@
 from scrapy import Spider
 from scrapy_splash import SplashRequest
 
+from datetime import datetime
+
 from reviewsGamesSearcher.items import Review
 
 import re
@@ -52,11 +54,15 @@ end
 
             hour = box.css(".hours::text").get().strip()
             hour = re.sub(r"[^0-9.,]", "", hour)
-            review['hour'] = float(hour)
+            review['hour'] = float(hour.replace(',',''))
+
 
             date = box.css(".date_posted::text").get().strip()
             date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
-            review['date'] = date
+            review['date'] = self.format_date(date)
+
+            print("FECHAAAA FORMATEADA")
+            print(review['date'])
 
             rank = box.css(".title::text").get().strip()
             rank = re.sub(r"[^a-zA-Z]", "", rank)
@@ -70,3 +76,18 @@ end
             review['review'] = reviewText.strip()
 
             yield review  # Will go to your pipeline
+
+    def format_date(self, date): 
+        date = date.replace('Posted ', '')
+        if len(date.split()) < 3:
+            date = date + " " + datetime.now().strftime("%Y")
+
+        date_formated = ""
+        try:
+            format = "%d %B %Y"
+            date_formated = datetime.strptime(date, format)
+            return date_formated.strftime("%Y-%m-%d")
+        except ValueError:
+            format = "%B %d %Y"
+            date_formated = datetime.strptime(date, format)
+            return date_formated.strftime("%Y-%m-%d")

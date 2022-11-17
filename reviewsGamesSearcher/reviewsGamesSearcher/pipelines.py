@@ -25,5 +25,6 @@ class ReviewsgamessearcherPipeline:
             }
             for node in self.listItems
         ]
+        print(actions)
 
         helpers.bulk(es, actions)
