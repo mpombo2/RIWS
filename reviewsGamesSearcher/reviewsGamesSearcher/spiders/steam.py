@@ -11,9 +11,11 @@ import locale
 
 class SteamSpider(Spider):
     name = "steam"
-    #Idioma para scrapear, 'es' para español e 'en' para ingles
-    scrapy_language = "es" 
 
+    #Lenguages de reseñas soportado: 'es' para español y 'en' para ingles
+    scrapy_language = "en"
+
+    #Script de Lua para scrollear y acceder a la página de reviews
     script = """
 function main(splash, args)
     --Deshabilitar imagenes para que carga mas rapido
@@ -44,58 +46,90 @@ end
             ]
 
         for url in urls:
-            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'timeout': 15, 'num_scrolls': 5, 'language': self.scrapy_language})
+            yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'timeout': 15, 'num_scrolls': 5})
 
     def parse(self, response):
         href = response.css(".view_all_reviews_btn > a::attr(href)").get()
-        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'timeout': 120, 'num_scrolls': 100, 'language': self.scrapy_language})
 
-    def parse_reviews(self, response):
+        #Reseñas en español
+        if (self.scrapy_language == "es"):
+            yield SplashRequest(url=href, callback=self.parse_reviews_es, endpoint='execute', args={'lua_source': self.script, 'timeout': 120, 'num_scrolls': 100, 'language': 'es'})
+        #Reseñas en ingles
+        else:
+            yield SplashRequest(url=href, callback=self.parse_reviews_en, endpoint='execute', args={'lua_source': self.script, 'timeout': 120, 'num_scrolls': 100, 'language': 'en'})        
+
+    def parse_reviews_es(self, response):
+        boxReviews = response.css(
+            ".apphub_Card.modalContentLink.interactable")
+
+        for box in boxReviews:
+            review = self.parse_reviews_common(box)
+
+            #Formaeto de horas en español
+            hour = box.css(".hours::text").get().strip()
+            hour = re.sub(r"[^0-9.,]", "", hour)
+            hour = (hour.split('.'))[0].replace(',','')
+            review['hour'] = int(hour)
+
+            #Formateo de fecha en español
+            date = box.css(".date_posted::text").get().strip()
+            date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
+            review['date'] = self.format_date(date, "es")
+
+            review['language'] = "es"
+
+            yield review 
+
+
+    def parse_reviews_en(self, response):
 
         boxReviews = response.css(
             ".apphub_Card.modalContentLink.interactable")
 
         for box in boxReviews:
-            review = Review()
+            review = self.parse_reviews_common(box)
 
+            hour = box.css(".hours::text").get().strip()
+            hour = re.sub(r"[^0-9.,]", "", hour)
+            hour = (hour.split(','))[0].replace('.','')
+            review['hour'] = int(hour)
+
+            date = box.css(".date_posted::text").get().strip()
+            date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
+            review['date'] = self.format_date(date, "en")
+
+            review['language'] = "en"
+
+            yield review 
+
+    #Funcion que construye los atributos que no dependen del idioma (author, rank, review)
+    def parse_reviews_common(self, box):
+        review = Review()
+
+        if (box.css(".apphub_CardContentAuthorName > a::text").get() != None):
             author = box.css(
                 ".apphub_CardContentAuthorName > a::text").get().strip()
             author = re.sub(r"[^a-zA-Z0-9\s]", "", author)
             review['author'] = author
+        else:
+            review['author'] = " "
 
-            hour = box.css(".hours::text").get().strip()
-            hour = re.sub(r"[^0-9.,]", "", hour)
-            if (self.scrapy_language == "en"):
-                print(hour)
-                hour = (hour.split(','))[0].replace('.','')
-            else: 
-                print(hour)
-                hour = (hour.split('.'))[0].replace(',','')
-            review['hour'] = int(hour)
+        rank = box.css(".title::text").get().strip()
+        rank = re.sub(r"[^a-zA-Z]", "", rank)
+        review['rank'] = (rank == "Recommended")
 
+        reviewText = ' '.join(
+            box.css(".apphub_CardTextContent::text").getall())
+        reviewText = reviewText.replace("\n", "")
+        reviewText = reviewText.replace("\t", "")
+        reviewText = re.sub(r"[^a-zA-Z0-9\s]", "", reviewText)
+        review['review'] = reviewText.strip()
 
-            date = box.css(".date_posted::text").get().strip()
-            date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
-            review['date'] = self.format_date(date)
+        return review
 
-            rank = box.css(".title::text").get().strip()
-            rank = re.sub(r"[^a-zA-Z]", "", rank)
-            review['rank'] = (rank == "Recommended")
-
-            reviewText = ' '.join(
-                box.css(".apphub_CardTextContent::text").getall())
-            reviewText = reviewText.replace("\n", "")
-            reviewText = reviewText.replace("\t", "")
-            reviewText = re.sub(r"[^a-zA-Z0-9\s]", "", reviewText)
-            review['review'] = reviewText.strip()
-
-            review['language'] = self.scrapy_language
-
-            yield review  # Will go to your pipeline
-
-    def format_date(self, date): 
+    def format_date(self, date, language): 
         # Para scrapear en ingles
-        if (self.scrapy_language == "en"):
+        if (language == "en"):
             date = date.replace('Posted ', '')
         else:
             date = date.replace('Publicada el ', '').replace('de ', '')
