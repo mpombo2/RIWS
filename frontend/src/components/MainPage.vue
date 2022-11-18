@@ -130,73 +130,102 @@
 
         <div class="d-flex justify-space-between mt-auto">
           <v-btn color="warning" @click="clean()">Limpiar</v-btn>
-          <v-btn
-            @click="search()"
-            color="primary"
-            :disabled="
-              !groupAuthor &&
-              !groupReview &&
-              !groupChecks &&
-              !groupDate &&
-              !groupHours
-            "
-            >Buscar</v-btn
-          >
+          <div class="d-flex align-center" style="gap: 1rem; width: 12rem">
+            <v-text-field
+              outlined
+              dense
+              hide-details
+              label="Máximo"
+              v-model="maxResult"
+              type="number"
+            >
+            </v-text-field>
+            <v-btn
+              @click="search()"
+              color="primary"
+              :disabled="
+                !groupAuthor &&
+                !groupReview &&
+                !groupChecks &&
+                !groupDate &&
+                !groupHours
+              "
+              >Buscar</v-btn
+            >
+          </div>
         </div>
       </div>
     </v-sheet>
-    <v-sheet
-      v-if="isResultEmpty"
-      rounded
-      width="70%"
-      class="d-flex flex-column justify-center align-center"
-    >
-      <v-icon size="200">mdi-note-search</v-icon>
-      <h1 class="font-weight-regular" style="color: #757575">
-        Sin resultados. Realice una búsqueda...
-      </h1>
-    </v-sheet>
-    <v-sheet
-      v-if="!isResultEmpty"
-      rounded
-      width="70%"
-      class="d-flex flex-column justify-center align-center"
-      style="overflow-y: auto"
-    >
-      <h1 class="font-weight-medium align-self-start ml-16 mb-n8">
-        Resultados:
-      </h1>
-      <div
-        class="pa-16 d-flex flex-wrap"
-        style="width: 100%; height: 90%; gap: 4rem"
+    <template v-if="!showDetail">
+      <v-sheet
+        v-if="isResultEmpty"
+        rounded
+        width="70%"
+        class="d-flex flex-column justify-center align-center"
       >
-        <template v-for="(item, index) in resultsSearch">
-          <v-btn
-            color="primary"
-            text
-            :key="index"
-            width="29%"
-            height="20%"
-            class="pa-0 ma-0"
-          >
-            <v-card
-              dark
-              color="#555"
-              width="100%"
-              height="7.4rem"
+        <v-icon size="200">mdi-note-search</v-icon>
+        <h1 class="font-weight-regular" style="color: #757575">
+          Sin resultados.
+        </h1>
+      </v-sheet>
+      <v-sheet
+        v-if="!isResultEmpty"
+        rounded
+        width="70%"
+        class="d-flex flex-column justify-center align-center"
+        style="overflow-y: auto"
+      >
+        <h1 class="font-weight-medium align-self-start ml-16 mb-n8">
+          Resultados:
+        </h1>
+        <div
+          class="pa-16 d-flex flex-wrap"
+          style="width: 100%; height: 90%; gap: 4rem"
+        >
+          <template v-for="(item, index) in resultsSearch">
+            <v-btn
+              @click="openDetail(item)"
+              color="primary"
+              text
+              :key="index"
+              width="29%"
+              height="40%"
               class="pa-0 ma-0"
             >
-              <v-card-title>{{ item.name }}</v-card-title>
-            </v-card>
-          </v-btn>
-        </template>
-      </div>
-    </v-sheet>
+              <v-card
+                dark
+                color="#555"
+                width="100%"
+                height="15rem"
+                class="pa-0 ma-0"
+              >
+                <v-card-title>
+                  <div class="d-flex justify-space-between" style="width: 100%">
+                    <span>{{ item.author }}</span>
+                    <v-icon large>
+                      {{ item.rank ? "mdi-thumb-up" : "mdi-thumb-down" }}
+                    </v-icon>
+                  </div>
+                </v-card-title>
+                <v-card-text style="width: 20rem">
+                  <span style="text-transform: none">
+                    {{ cutText(item.review) }}</span
+                  >
+                </v-card-text>
+              </v-card>
+            </v-btn>
+          </template>
+        </div>
+      </v-sheet>
+    </template>
+    <DetailPage v-if="showDetail" :item="itemSelected" />
   </div>
 </template>
 
 <script>
+import DetailPage from "./DetailPage.vue";
 export default {
+  components: { DetailPage },
   name: "MainPage",
   data: () => ({
     author: "",
@@ -217,28 +246,11 @@ export default {
     groupDate: false,
     groupHours: false,
 
-    resultsSearch: [
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-    ],
+    maxResult: 20,
+    resultsSearch: [],
+
+    itemSelected: null,
+    showDetail: false,
   }),
   computed: {
     isResultEmpty() {
@@ -246,6 +258,17 @@ export default {
     },
   },
   methods: {
+    cutText(review) {
+      return review.substring(0, 250) + "...";
+    },
+    openDetail(item) {
+      this.itemSelected = item;
+      this.showDetail = true;
+    },
+    closeDetail() {
+      this.itemSelected = null;
+      this.showDetail = false;
+    },
     clean() {
       this.author = "";
       this.review = "";
@@ -269,32 +292,30 @@ export default {
       const body = {
         query: {
           match: {
-            rank: true,
+            review: this.review,
           },
         },
-      };
-      const credentials = btoa("elastic:es1234");
-      const auth = {
-        Authorization: `Basic ${credentials}`,
-        "Content-Type": "application/json",
       };
       const options = {
         method: "POST",
         mode: "cors",
         body: JSON.stringify(body),
-        headers: auth,
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
       };
       const request = new Request(
-        "https://localhost:9200/steam/_search",
+        "http://localhost:9200/steam/_search",
         options
       );
 
       fetch(request)
-        .then(function (response) {
+        .then((response) => {
           return response.json();
         })
-        .then(function (data) {
-          console.log(data);
+        .then((data) => {
+          this.resultsSearch = [];
+          for (const hit of data.hits.hits) {
+            console.log(hit);
+          }
         });
     },
   },

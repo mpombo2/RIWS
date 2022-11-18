@@ -37,7 +37,7 @@ end
 
     def parse(self, response):
         href = response.css(".view_all_reviews_btn > a::attr(href)").get()
-        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'timeout': 120, 'num_scrolls': 100})
+        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'timeout': 220, 'num_scrolls': 200})
 
     def parse_reviews(self, response):
 
