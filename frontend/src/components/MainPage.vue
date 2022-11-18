@@ -2,7 +2,19 @@
   <div class="mainPageSheet d-flex" style="gap: 2rem">
     <v-sheet rounded width="30%">
       <div class="d-flex flex-column ma-10" style="gap: 2rem; height: 77vh">
-        <h2>Filtros de búsqueda</h2>
+        <div class="d-flex" style="gap: 9rem">
+          <h2>Filtros de búsqueda</h2>
+          <v-select
+            dense
+            outlined
+            hide-details
+            label="Idioma"
+            :items="['es', 'en']"
+            v-model="lang"
+            style="width: 10px"
+          >
+          </v-select>
+        </div>
 
         <div class="d-flex align-center justify-center" style="gap: 1rem">
           <v-switch v-model="groupReview"></v-switch>
@@ -201,16 +213,29 @@
               >
                 <v-card-title>
                   <div class="d-flex justify-space-between" style="width: 100%">
-                    <span>{{ item.author }}</span>
+                    <span>{{
+                      item.author.trim() == ""
+                        ? "Desconocido"
+                        : item.author.trim()
+                    }}</span>
                     <v-icon large>
                       {{ item.rank ? "mdi-thumb-up" : "mdi-thumb-down" }}
                     </v-icon>
                   </div>
                 </v-card-title>
-                <v-card-text style="width: 20rem">
+                <v-card-text
+                  style="width: 20rem; height: 11rem"
+                  class="d-flex flex-column"
+                >
                   <span style="text-transform: none">
-                    {{ cutText(item.review) }}</span
+                    {{ cutText(item.review) }}
+                  </span>
+                  <span
+                    class="d-flex justify-end mt-auto"
+                    style="text-transform: none; color: white"
                   >
+                    Relevancia del resultado: {{ item.score.toFixed(2) }}
+                  </span>
                 </v-card-text>
               </v-card>
             </v-btn>
@@ -251,6 +276,8 @@ export default {
 
     itemSelected: null,
     showDetail: false,
+
+    lang: "es",
   }),
   computed: {
     isResultEmpty() {
@@ -289,13 +316,95 @@ export default {
       this.groupHours = false;
     },
     search() {
-      const body = {
-        query: {
+      const must = [];
+      if (this.groupReview && this.review.length > 0) {
+        must.push({
           match: {
             review: this.review,
           },
+        });
+      }
+      if (this.groupAuthor && this.author.length > 0) {
+        must.push({
+          match: {
+            author: this.author,
+          },
+        });
+      }
+
+      const filter = [];
+      filter.push({
+        term: {
+          language: this.lang,
+        },
+      });
+      if (this.groupChecks) {
+        if (
+          (!this.checkOk && this.checkBad) ||
+          (this.checkOk && !this.checkBad)
+        ) {
+          filter.push({
+            term: {
+              rank: this.checkOk,
+            },
+          });
+        }
+      }
+      if (this.groupDate) {
+        if (this.rangeDate) {
+          if (this.dateStart.length > 0 && this.dateStart.length > 0) {
+            filter.push({
+              range: {
+                date: {
+                  lte: this.dateEnd,
+                  gte: this.dateStart,
+                },
+              },
+            });
+          }
+        } else {
+          if (this.dateStart.length > 0) {
+            filter.push({
+              term: {
+                date: this.dateStart,
+              },
+            });
+          }
+        }
+      }
+      if (this.groupHours) {
+        if (this.rangeHours) {
+          if (this.hoursStart != "" && this.hoursEnd != "") {
+            filter.push({
+              range: {
+                hour: {
+                  lte: this.hoursEnd,
+                  gte: this.hoursStart,
+                },
+              },
+            });
+          }
+        } else {
+          if (this.hour != "") {
+            filter.push({
+              term: {
+                hour: this.hour,
+              },
+            });
+          }
+        }
+      }
+
+      const body = {
+        size: 20,
+        query: {
+          bool: {
+            must,
+            filter: [],
+          },
         },
       };
+
       const options = {
         method: "POST",
         mode: "cors",
@@ -314,7 +423,14 @@ export default {
         .then((data) => {
           this.resultsSearch = [];
           for (const hit of data.hits.hits) {
-            console.log(hit);
+            this.resultsSearch.push({
+              author: hit._source.author,
+              review: hit._source.review,
+              hours: hit._source.hour,
+              rank: hit._source.rank,
+              date: hit._source.date,
+              score: hit._score,
+            });
           }
         });
     },

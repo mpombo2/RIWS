@@ -15,7 +15,9 @@
     <v-card height="100%">
       <v-card-title class="ma-3">
         <div class="d-flex justify-space-between" style="width: 100%">
-          <span style="font-size: 32px">{{ item.author }}</span>
+          <span style="font-size: 32px">
+            {{ item.author.trim() == "" ? "Desconocido" : item.author.trim() }}
+          </span>
           <div>
             <v-icon x-large class="mr-2">
               {{ item.rank ? "mdi-thumb-up" : "mdi-thumb-down" }}
