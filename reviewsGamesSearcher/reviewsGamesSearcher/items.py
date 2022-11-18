@@ -12,3 +12,4 @@ class Review(Item):
     date = Field()
     rank = Field()
     review = Field()
+    language = Field()

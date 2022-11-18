@@ -11,13 +11,17 @@ import locale
 
 class SteamSpider(Spider):
     name = "steam"
-    #Idioma para scrapear, 'es' para español e 'en' 
+    #Idioma para scrapear, 'es' para español e 'en' para ingles
     scrapy_language = "es" 
 
     script = """
 function main(splash, args)
+    --Deshabilitar imagenes para que carga mas rapido
     splash.images_enabled = false
+
+    --Establecemos tiempo de espera entre scroll
     local scroll_delay = 1.0
+
     local scroll_to = splash:jsfunc("window.scrollTo")
     local get_body_height = splash:jsfunc("function() {return document.body.scrollHeight;}")
     assert(splash:go{splash.args.url, headers={
@@ -84,6 +88,8 @@ end
             reviewText = reviewText.replace("\t", "")
             reviewText = re.sub(r"[^a-zA-Z0-9\s]", "", reviewText)
             review['review'] = reviewText.strip()
+
+            review['language'] = self.scrapy_language
 
             yield review  # Will go to your pipeline
 
