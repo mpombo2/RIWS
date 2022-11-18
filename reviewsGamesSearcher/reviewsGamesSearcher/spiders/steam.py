@@ -11,7 +11,7 @@ import locale
 
 class SteamSpider(Spider):
     name = "steam"
-    #Idioma para scrapear, 'es' para español e 'en'
+    #Idioma para scrapear, 'es' para español e 'en' 
     scrapy_language = "es" 
 
     script = """
@@ -35,8 +35,9 @@ end
 
     def start_requests(self):
         urls = [
-            #"https://store.steampowered.com/app/813780/Age_of_Empires_II_Definitive_Edition/"
-            "https://store.steampowered.com/app/431960/Wallpaper_Engine/"]
+            "https://store.steampowered.com/app/813780/Age_of_Empires_II_Definitive_Edition/"
+            #"https://store.steampowered.com/app/431960/Wallpaper_Engine/"
+            ]
 
         for url in urls:
             yield SplashRequest(url=url, callback=self.parse, endpoint='execute', args={'lua_source': self.script, 'timeout': 15, 'num_scrolls': 5, 'language': self.scrapy_language})
@@ -60,7 +61,13 @@ end
 
             hour = box.css(".hours::text").get().strip()
             hour = re.sub(r"[^0-9.,]", "", hour)
-            review['hour'] = float(hour.replace(',',''))
+            if (self.scrapy_language == "en"):
+                print(hour)
+                hour = (hour.split(','))[0].replace('.','')
+            else: 
+                print(hour)
+                hour = (hour.split('.'))[0].replace(',','')
+            review['hour'] = int(hour)
 
 
             date = box.css(".date_posted::text").get().strip()
