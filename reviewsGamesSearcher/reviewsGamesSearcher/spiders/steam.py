@@ -58,20 +58,24 @@ end
         else:
             yield SplashRequest(url=href, callback=self.parse_reviews_en, endpoint='execute', args={'lua_source': self.script, 'timeout': 120, 'num_scrolls': 100, 'language': 'en'})        
 
+    #Parseo de reseñas en español
     def parse_reviews_es(self, response):
+        #Extraemos la review
         boxReviews = response.css(
             ".apphub_Card.modalContentLink.interactable")
 
+        #Obtenemos cada atributo de la review
         for box in boxReviews:
+            #Formateo de atributos que no dependen del idioma (author, rank y review)
             review = self.parse_reviews_common(box)
 
-            #Formaeto de horas en español
+            #Formateo de horas jugadas en español (ejemplo: convertir de 1.000,5 a 1000)
             hour = box.css(".hours::text").get().strip()
             hour = re.sub(r"[^0-9.,]", "", hour)
             hour = (hour.split('.'))[0].replace(',','')
             review['hour'] = int(hour)
 
-            #Formateo de fecha en español
+            #Formateo de fecha en español (ejemplo: convertir 'Publicada el 18 de noviembre de 2022 a '2022-11-18')
             date = box.css(".date_posted::text").get().strip()
             date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
             review['date'] = self.format_date(date, "es")
@@ -80,20 +84,24 @@ end
 
             yield review 
 
-
+    #Parseo de reseñas en ingles
     def parse_reviews_en(self, response):
-
+        #Extraemos la review
         boxReviews = response.css(
             ".apphub_Card.modalContentLink.interactable")
 
+        #Obtenemos cada atributo de la review
         for box in boxReviews:
+            #Formateo de atributos que no dependen del idioma (author, rank y review)
             review = self.parse_reviews_common(box)
 
+            #Formateo de horas en ingles (ejemplo: convertir de 1,000.5 a 1000)
             hour = box.css(".hours::text").get().strip()
             hour = re.sub(r"[^0-9.,]", "", hour)
             hour = (hour.split(','))[0].replace('.','')
             review['hour'] = int(hour)
 
+            #Formateo de fecha en ingles (ejemplo: convertir 'Posted 18 november 2022' a '2022-11-18')
             date = box.css(".date_posted::text").get().strip()
             date = re.sub(r"[^a-zA-Z0-9\s]", "", date)
             review['date'] = self.format_date(date, "en")
@@ -128,9 +136,10 @@ end
         return review
 
     def format_date(self, date, language): 
-        # Para scrapear en ingles
+        #Formateo de fechas en ingles
         if (language == "en"):
             date = date.replace('Posted ', '')
+        #Formateo de fechas en español
         else:
             date = date.replace('Publicada el ', '').replace('de ', '')
             locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
