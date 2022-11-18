@@ -2,7 +2,19 @@
   <div class="mainPageSheet d-flex" style="gap: 2rem">
     <v-sheet rounded width="30%">
       <div class="d-flex flex-column ma-10" style="gap: 2rem; height: 77vh">
-        <h2>Filtros de búsqueda</h2>
+        <div class="d-flex" style="gap: 9rem">
+          <h2>Filtros de búsqueda</h2>
+          <v-select
+            dense
+            outlined
+            hide-details
+            label="Idioma"
+            :items="['es', 'en']"
+            v-model="lang"
+            style="width: 10px"
+          >
+          </v-select>
+        </div>
 
         <div class="d-flex align-center justify-center" style="gap: 1rem">
           <v-switch v-model="groupReview"></v-switch>
@@ -130,73 +142,115 @@
 
         <div class="d-flex justify-space-between mt-auto">
           <v-btn color="warning" @click="clean()">Limpiar</v-btn>
-          <v-btn
-            @click="search()"
-            color="primary"
-            :disabled="
-              !groupAuthor &&
-              !groupReview &&
-              !groupChecks &&
-              !groupDate &&
-              !groupHours
-            "
-            >Buscar</v-btn
-          >
+          <div class="d-flex align-center" style="gap: 1rem; width: 12rem">
+            <v-text-field
+              outlined
+              dense
+              hide-details
+              label="Máximo"
+              v-model="maxResult"
+              type="number"
+            >
+            </v-text-field>
+            <v-btn
+              @click="search()"
+              color="primary"
+              :disabled="
+                !groupAuthor &&
+                !groupReview &&
+                !groupChecks &&
+                !groupDate &&
+                !groupHours
+              "
+              >Buscar</v-btn
+            >
+          </div>
         </div>
       </div>
     </v-sheet>
-    <v-sheet
-      v-if="isResultEmpty"
-      rounded
-      width="70%"
-      class="d-flex flex-column justify-center align-center"
-    >
-      <v-icon size="200">mdi-note-search</v-icon>
-      <h1 class="font-weight-regular" style="color: #757575">
-        Sin resultados. Realice una búsqueda...
-      </h1>
-    </v-sheet>
-    <v-sheet
-      v-if="!isResultEmpty"
-      rounded
-      width="70%"
-      class="d-flex flex-column justify-center align-center"
-      style="overflow-y: auto"
-    >
-      <h1 class="font-weight-medium align-self-start ml-16 mb-n8">
-        Resultados:
-      </h1>
-      <div
-        class="pa-16 d-flex flex-wrap"
-        style="width: 100%; height: 90%; gap: 4rem"
+    <template v-if="!showDetail">
+      <v-sheet
+        v-if="isResultEmpty"
+        rounded
+        width="70%"
+        class="d-flex flex-column justify-center align-center"
       >
-        <template v-for="(item, index) in resultsSearch">
-          <v-btn
-            color="primary"
-            text
-            :key="index"
-            width="29%"
-            height="20%"
-            class="pa-0 ma-0"
-          >
-            <v-card
-              dark
-              color="#555"
-              width="100%"
-              height="7.4rem"
+        <v-icon size="200">mdi-note-search</v-icon>
+        <h1 class="font-weight-regular" style="color: #757575">
+          Sin resultados.
+        </h1>
+      </v-sheet>
+      <v-sheet
+        v-if="!isResultEmpty"
+        rounded
+        width="70%"
+        class="d-flex flex-column justify-center align-center"
+        style="overflow-y: auto"
+      >
+        <h1 class="font-weight-medium align-self-start ml-16 mb-n8">
+          Resultados:
+        </h1>
+        <div
+          class="pa-16 d-flex flex-wrap"
+          style="width: 100%; height: 90%; gap: 4rem"
+        >
+          <template v-for="(item, index) in resultsSearch">
+            <v-btn
+              @click="openDetail(item)"
+              color="primary"
+              text
+              :key="index"
+              width="29%"
+              height="40%"
               class="pa-0 ma-0"
             >
-              <v-card-title>{{ item.name }}</v-card-title>
-            </v-card>
-          </v-btn>
-        </template>
-      </div>
-    </v-sheet>
+              <v-card
+                dark
+                color="#555"
+                width="100%"
+                height="15rem"
+                class="pa-0 ma-0"
+              >
+                <v-card-title>
+                  <div class="d-flex justify-space-between" style="width: 100%">
+                    <span>{{
+                      item.author.trim() == ""
+                        ? "Desconocido"
+                        : item.author.trim()
+                    }}</span>
+                    <v-icon large>
+                      {{ item.rank ? "mdi-thumb-up" : "mdi-thumb-down" }}
+                    </v-icon>
+                  </div>
+                </v-card-title>
+                <v-card-text
+                  style="width: 20rem; height: 11rem"
+                  class="d-flex flex-column"
+                >
+                  <span style="text-transform: none">
+                    {{ cutText(item.review) }}
+                  </span>
+                  <span
+                    class="d-flex justify-end mt-auto"
+                    style="text-transform: none; color: white"
+                  >
+                    Relevancia del resultado: {{ item.score.toFixed(2) }}
+                  </span>
+                </v-card-text>
+              </v-card>
+            </v-btn>
+          </template>
+        </div>
+      </v-sheet>
+    </template>
+    <DetailPage v-if="showDetail" :item="itemSelected" />
   </div>
 </template>
 
 <script>
+import DetailPage from "./DetailPage.vue";
 export default {
+  components: { DetailPage },
   name: "MainPage",
   data: () => ({
     author: "",
@@ -217,28 +271,13 @@ export default {
     groupDate: false,
     groupHours: false,
 
-    resultsSearch: [
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-      { name: "hola" },
-    ],
+    maxResult: 20,
+    resultsSearch: [],
+
+    itemSelected: null,
+    showDetail: false,
+
+    lang: "es",
   }),
   computed: {
     isResultEmpty() {
@@ -246,6 +285,17 @@ export default {
     },
   },
   methods: {
+    cutText(review) {
+      return review.substring(0, 250) + "...";
+    },
+    openDetail(item) {
+      this.itemSelected = item;
+      this.showDetail = true;
+    },
+    closeDetail() {
+      this.itemSelected = null;
+      this.showDetail = false;
+    },
     clean() {
       this.author = "";
       this.review = "";
@@ -266,35 +316,122 @@ export default {
       this.groupHours = false;
     },
     search() {
-      const body = {
-        query: {
+      const must = [];
+      if (this.groupReview && this.review.length > 0) {
+        must.push({
           match: {
-            rank: true,
+            review: this.review,
+          },
+        });
+      }
+      if (this.groupAuthor && this.author.length > 0) {
+        must.push({
+          match: {
+            author: this.author,
+          },
+        });
+      }
+
+      const filter = [];
+      filter.push({
+        term: {
+          language: this.lang,
+        },
+      });
+      if (this.groupChecks) {
+        if (
+          (!this.checkOk && this.checkBad) ||
+          (this.checkOk && !this.checkBad)
+        ) {
+          filter.push({
+            term: {
+              rank: this.checkOk,
+            },
+          });
+        }
+      }
+      if (this.groupDate) {
+        if (this.rangeDate) {
+          if (this.dateStart.length > 0 && this.dateStart.length > 0) {
+            filter.push({
+              range: {
+                date: {
+                  lte: this.dateEnd,
+                  gte: this.dateStart,
+                },
+              },
+            });
+          }
+        } else {
+          if (this.dateStart.length > 0) {
+            filter.push({
+              term: {
+                date: this.dateStart,
+              },
+            });
+          }
+        }
+      }
+      if (this.groupHours) {
+        if (this.rangeHours) {
+          if (this.hoursStart != "" && this.hoursEnd != "") {
+            filter.push({
+              range: {
+                hour: {
+                  lte: this.hoursEnd,
+                  gte: this.hoursStart,
+                },
+              },
+            });
+          }
+        } else {
+          if (this.hour != "") {
+            filter.push({
+              term: {
+                hour: this.hour,
+              },
+            });
+          }
+        }
+      }
+
+      const body = {
+        size: 20,
+        query: {
+          bool: {
+            must,
+            filter: [],
           },
         },
       };
-      const credentials = btoa("elastic:es1234");
-      const auth = {
-        Authorization: `Basic ${credentials}`,
-        "Content-Type": "application/json",
-      };
+
       const options = {
         method: "POST",
         mode: "cors",
         body: JSON.stringify(body),
-        headers: auth,
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
       };
       const request = new Request(
-        "https://localhost:9200/steam/_search",
+        "http://localhost:9200/steam/_search",
         options
       );
 
       fetch(request)
-        .then(function (response) {
+        .then((response) => {
           return response.json();
         })
-        .then(function (data) {
-          console.log(data);
+        .then((data) => {
+          this.resultsSearch = [];
+          for (const hit of data.hits.hits) {
+            this.resultsSearch.push({
+              author: hit._source.author,
+              review: hit._source.review,
+              hours: hit._source.hour,
+              rank: hit._source.rank,
+              date: hit._source.date,
+              score: hit._score,
+            });
+          }
         });
     },
   },
