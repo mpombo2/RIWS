@@ -338,11 +338,14 @@ export default {
           language: this.lang,
         },
       });
+      console.log("1", this.groupChecks);
       if (this.groupChecks) {
+        console.log("2", this.checkOk, this.checkBad);
         if (
           (!this.checkOk && this.checkBad) ||
           (this.checkOk && !this.checkBad)
         ) {
+          console.log("entra")
           filter.push({
             term: {
               rank: this.checkOk,
@@ -385,10 +388,10 @@ export default {
             });
           }
         } else {
-          if (this.hour != "") {
+          if (this.hoursStart != "") {
             filter.push({
               term: {
-                hour: this.hour,
+                hour: this.hoursStart,
               },
             });
           }
@@ -396,11 +399,11 @@ export default {
       }
 
       const body = {
-        size: 20,
+        size: this.maxResult,
         query: {
           bool: {
             must,
-            filter: [],
+            filter,
           },
         },
       };
