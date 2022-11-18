@@ -50,10 +50,6 @@ end
 
     def parse(self, response):
         href = response.css(".view_all_reviews_btn > a::attr(href)").get()
-<<<<<<< HEAD
-=======
-        yield SplashRequest(url=href, callback=self.parse_reviews, endpoint='execute', args={'lua_source': self.script, 'timeout': 220, 'num_scrolls': 200})
->>>>>>> feature/xaime
 
         #Reseñas en español
         if (self.scrapy_language == "es"):
